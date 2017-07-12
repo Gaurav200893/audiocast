@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+{% load book_extras %}
+
+{% block slider_content %}
+<section id="slider"><!--slider-->
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-12">
+					<div id="slider-carousel" class="carousel slide" data-ride="carousel">
+						<ol class="carousel-indicators">
+							<li data-target="#slider-carousel" data-slide-to="0" class="active"></li>
+							<li data-target="#slider-carousel" data-slide-to="1"></li>
+							<li data-target="#slider-carousel" data-slide-to="2"></li>
+						</ol>
+						
+						<div class="carousel-inner" style="height: 500px;">
+
+							{% for book in all_books %}
+								{% if forloop.counter0 == 0 %}
+								{% if book.is_banner|stringformat:"s" == "On" %}
+								<div class="item active ">
+									<div class="col-sm-6">
+										<h1 class="item-h1"><span>{{ book.title }}</span><br>-
+										{{ book.author_id|name_joins:", " }}
+										</h1>
+										<h2>Description</h2>
+										<p>{{ book.description|truncatewords:30 }}</p>
+										<a href="{% url 'detail' book.id %}" type="button" class="btn btn-default get">Get it now</a>
+									</div>
+									<div class="col-sm-6">
+										<img  src="{{ book.image.url }}" class="img-responsive book-img" alt="" style="width: 400px;" />
+										
+									</div>
+								</div>
+								{% endif %}
+
+								{% else %}
+								
+								{% if book.is_banner|stringformat:"s" == "On" %}
+								<div class="item item-h1">
+									<div class="col-sm-6">
+										<h1 class="item-h1"><span>{{ book.title }}</span><br>-
+										{{ book.author_id|name_joins:", " }}
+										</h1>
+										<h2>Description</h2>
+										<p>{{ book.description|truncatewords:30 }}</p>
+										<a href="{% url 'detail' book.id %}" type="button" class="btn btn-default get">Get it now</a>
+									</div>
+									<div class="col-sm-6">
+										<img src="{{ book.image.url }}" class="img-responsive book-img" alt="" style="width: 400px;" />
+										
+									</div>
+								</div>
+								{% endif %}
+
+								{% endif %}
+							{% endfor %}
+						</div>
+						
+						<a href="#slider-carousel" class="left control-carousel hidden-xs" data-slide="prev">
+							<i class="fa fa-angle-left"></i>
+						</a>
+						<a href="#slider-carousel" class="right control-carousel hidden-xs" data-slide="next">
+							<i class="fa fa-angle-right"></i>
+						</a>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+	</section><!--/slider-->
+{% endblock slider_content %}
+
+{% block content %}
+
+<!-- {% regroup all_books by category as books_by_category %}
+
+{% for c in books_by_category %}
+  <h1>{{c.grouper}}</h1>
+  <ul>
+    {% for p in c.list %}
+      <li>{{p.name}}</li>
+    {% endfor %}
+  </ul>
+{% endfor %} -->
+	<div class="col-sm-9 padding-right">
+					<div class="features_items"><!--features_items-->
+						<h2 class="title text-center">Featured Books</h2>
+
+						{% for book in all_books %}
+
+						{% if book.is_featured == "On" %}
+						<div class="col-sm-4">
+							<div class="product-image-wrapper">
+								<div class="single-products">
+										<div class="productinfo text-center">
+											<img src="{{ book.image.url }}" style="width: 195px;height: 195px;" class="book-img" >
+	
+											<p style="margin-top: 10px;">
+											{{ book.title|truncatewords:8 }}</p>
+											
+											<p>- {% for name in book.author_id.all %}
+												{{ name }}
+											{% endfor %}</p>
+											<a href="{% url 'detail' book.id %}" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>See Details</a>
+										</div>
+
+								</div>
+
+							</div>
+						</div>
+						{% endif %}	
+
+						{% endfor %}
+
+					</div><!--features_items-->
+					
+					
+					
+				</div>
+
+	{% if all_books %}
+		<!-- <ul>
+
+
+		{% for book in all_books %}
+			<li><a href="/books/{{ book.id }}">{{ book.title }}</li>
+		{% endfor %}
+		<ul>	 -->
+	{% else %}
+		<h3>No books present</h3>
+	{% endif %}
+
+{% endblock %}
+
+
+{% block category_list %}
+
+<!-- categories -->
+			<div class="col-sm-3">
+				<div class="left-sidebar">
+					<h2>Category</h2>
+					
+					<div class="panel-group category-products" id="accordian"><!--category-products-->
+					{% for category in all_categories %}
+					{% if category.parent == None %}
+						<div class="panel panel-default">
+							<div class="panel-heading">
+							{% if category.child.count %}
+								<h4 class="panel-title">
+
+								     <a href="{% url 'category_link' category.id %}">{{ category.category_name }}</a>
+									<a data-toggle="collapse" data-parent="#accordian" href="#category_{{category.id}}">
+										<span class="badge pull-right"><i class="fa fa-plus"></i></span>
+									</a>
+								</h4>
+							{% else %}
+								<h4 class="panel-title"><a href="{% url 'category_link' category.id %}">{{ category.category_name }}</a></h4>
+							{% endif %}
+							</div>
+							
+
+							{% if category.child.count %}
+							<div id="category_{{category.id}}" class="panel-collapse collapse">
+								<div class="panel-body">
+									<ul>
+									{% for c in category.child.all %}
+										<li><a href="{% url 'category_link' c.id %}">{{ c }}</a></li>
+									{% endfor %}
+									</ul>
+								</div>
+							</div>
+							{% endif %}
+							
+						</div>
+					{% endif %}
+					{% endfor %}
+
+					<!-- <div class="panel panel-default">
+						<div class="panel-heading">
+							<h4 class="panel-title"><a href="#">Fashion</a></h4>
+						</div>
+					</div> -->
+					</div><!--/category-products-->
+					
+					<div class="google-ad text-center"><!--shipping-->
+							<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-6075770909794310",
+    enable_page_level_ads: true
+  });
+</script>
+					</div>
+					
+				</div>
+			</div>
+{% endblock category_list %}

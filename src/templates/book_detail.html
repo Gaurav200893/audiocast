@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load book_extras %}
+
+{% block content %}
+
+<div class="container">
+	<div class="row">
+	<h2>{{ book.title }} - {{ book.author_join }}</h2>
+		<div class="col-sm-9">
+
+		<div class="boxed-container" style="padding: 15px;">
+			<div class="col-sm-4">
+				<div class="" style="text-align: center;">
+					<img src="{{ book.image.url }}" style="width: 250px; height: 262px;" 
+					alt="book-img" class="img-thumbnail book-img">
+					<div class="play-audio play" style="color:#005887;font-size: 20px;">
+						<span>
+						<i id="audio-icon" class="fa fa-play" aria-hidden="true"></i> Play Review
+						</span>
+						<audio id="book_{{ book.id }}" src="{{ book.audio_link.url }}" ></audio>
+					</div>
+				</div>
+			</div>
+
+		
+			<div class="col-sm-8 product-info-list" style="font-size: 20px;">
+			
+					<div>
+						<strong>Author: </strong><span class="detail-book-info">{{ book.author_join }}</span>
+					</div>
+					<!--<div>
+						<strong>Narrator: </strong><span class="detail-book-info">{{ book.narrator_join }}</span>
+
+					</div>
+					 <div>
+						<strong>Duration: </strong><span class="detail-book-info">{{ book.length }}</span>
+					</div>
+					<div>
+						<strong>Program: </strong><span class="detail-book-info">{{ book.program_format }}</span>
+					</div>
+					<div>
+						<strong>Publisher: </strong><span class="detail-book-info">{{ book.publisher }}</span>
+					</div>	
+					<div>
+						<strong>Release Date: </strong><span class="detail-book-info">{{ book.release_date|date:"F o" }}</span>
+					</div>
+					
+					
+					<div class="detail-book-info-wrap">
+						<strong>Choose Language: </strong>
+						<span class="detail-book-info">
+							<select onchange="callPrice(this)" style="width: 50%">
+								<option value="">--Select--</option>
+								{% for language in language_list %}	
+									<option value="{{ language.id }}">{{ language }}</option>
+								{% endfor %}
+							</select>
+						</span>
+					</div> 
+			
+
+				<div class="paired-buttons">
+					<a href="#" class="btn btn-default buy-book"><i class="fa fa-shopping-cart"></i> Buy</a>
+				</div>
+				<div class="paired-buttons">
+					<a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+				</div>-->
+				
+			</div>
+		</div>
+		
+
+			<div class="col-sm-12">
+				<h3>Book Quotes</h3>
+				<hr>
+				<p>{{ book.description }}</p>
+				
+			</div>
+		</div>
+	</div>
+
+</div>
+
+
+<script type="text/javascript">
+	
+	// get price data
+	function callPrice(ele){
+		$.ajax({
+			data: {
+				language: $(ele).val(), 
+				csrfmiddlewaretoken: "{{ csrf_token }}"
+			},
+			type: "post",
+			url:"/books/ajax/{{ book.id }}/",
+			success: function(data){
+				processBookPriceData(JSON.parse(data));
+			},
+			error: function(err){
+				console.log("no response");
+			}
+
+		});
+	}
+
+	//parse string or obj to json
+	function get_parsed_json(obj){
+		return JSON.parse(obj);
+	}
+
+	//show price
+	function processBookPriceData(obj){
+
+		var is_sucess = obj.is_sucess;
+		if(is_sucess){
+			
+			
+			var currency_list = get_parsed_json(obj.currency_list);
+			var price_list = get_parsed_json(obj.price_list);
+
+			currency_name = currency_list[0].fields.currency_name;	
+			currency_name_symbol = currency_list[0].fields.currency_symbol;
+			price_tag = price_list[0].fields.price_tag;
+			
+
+			book_id = price_list[0].fields.book;
+			currency_id = price_list[0].fields.currency;
+			language_id  = price_list[0].fields.language;
+			
+			price_option_html = '<div class="price-box-wrapper">'+
+						'<strong>Price: </strong><span class="detail-book-info">'+
+							'<span class="price-box" book-id="'+book_id+'" currency-id="'+currency_id+'" language-id="'+language_id+'" >'+
+								currency_name_symbol+" "+price_tag +
+							'</span>'+
+						'</span>'+
+					'<div>';
+
+			$(".price-box-wrapper").remove();
+			$(price_option_html).insertAfter($(".detail-book-info-wrap"))
+			// $(".product-info-list").append(price_option_html);
+		}else{
+			alert("Something went wrong.");
+		}
+
+
+	}
+
+	
+		$(".play-audio").on("click",function(){
+			if($(this).hasClass("play")){
+				$(this).addClass("pause");
+				$(this).removeClass("play");
+
+				$("#audio-icon").addClass("fa-pause");
+				$("#audio-icon").removeClass("fa-play");
+
+				$("#book_1")[0].load();
+				$("#book_1")[0].pause();
+				$("#book_1")[0].play();
+			}else{
+				$(this).addClass("play");
+				$(this).removeClass("pause");
+
+				$("#audio-icon").removeClass("fa-pause");
+				$("#audio-icon").addClass("fa-play");
+
+				$("#book_1")[0].pause();
+			}
+			
+
+		})
+	
+
+</script>
+{% endblock %}

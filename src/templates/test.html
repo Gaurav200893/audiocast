@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load book_extras %}
+
+{% block content %}
+
+
+<!-- {% for price in price_list %}
+	{{ price }}
+{% endfor %} -->
+
+<select onchange="callPrice(this)">
+	<option value="">--Select--</option>
+{% for language in language_list %}	
+	<option value="{{ language.id }}">{{ language }}</option>
+{% endfor %}
+</select>
+
+
+<button class="ajax-btn">Call Ajax</button>
+
+<!-- {% for currency_data in currency_list %}
+	{% for price_data in price_list %}
+		
+		{% for language_data in language_list %}
+			{% if price_data.language == language_data.id %}
+				{{ language_data.language_name }}
+			{% endif %}
+		{% endfor %}
+		
+		{% if price_data.currency == currency_data.id %}
+			{{ currency_data.currency_symbol }}
+			{{ price_data.price_tag }}
+		{% endif %}
+	{% endfor %}
+{% endfor %} -->
+<br>
+
+<!-- price_data  [lang1, curr1; lang2, curr2]
+lang_data [lang1-eng, lang2-hind]
+curren_data [curr1-$, curr2-rup] -->
+
+<br>---
+{{ language_list }}
+<br>---
+
+---------------------------------<br>
+<!-- {% for price_data in price_list %}
+
+	{% for language_data in language_list %}
+		{% if price_data.language == language_data.id %}
+			{{ language_data.language_name }}==<br>
+		{% endif %}
+	{% endfor %}
+
+	{% for currency_data in currency_list %}
+		{% if price_data.currency == currency_data.id %}
+			{{ currency_data.currency_symbol }}
+			{{ price_data.price_tag }}
+		{% endif %}
+	{% endfor %}
+{% endfor %} -->
+
+
+{% csrf_token %}
+<script type="text/javascript">
+
+
+
+		console.log($(".ajax-btn"));
+
+	$(".ajax-btn").on("click",function(){
+		$.ajax({
+			data: {
+				language: $(this).val(), 
+				csrfmiddlewaretoken: "{{ csrf_token }}"
+			},
+			type: "post",
+			url:"/books/ajax/{{ book.id }}/",
+			success: function(data){
+				console.log(data)
+			},
+			error: function(err){
+				console.log("no response");
+			}
+
+		})
+
+	});
+
+	function callPrice(ele){
+		$.ajax({
+			data: {
+				language: $(ele).val(), 
+				csrfmiddlewaretoken: "{{ csrf_token }}"
+			},
+			type: "post",
+			url:"/books/ajax/{{ book.id }}/",
+			success: function(data){
+				console.log(data)
+			},
+			error: function(err){
+				console.log("no response");
+			}
+
+		});
+	}
+
+
+
+</script>
+{% endblock %}
+

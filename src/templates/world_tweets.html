@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load book_extras %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Tweets around the world <small>Please click on the country to see the tweets.</small></h1>
+</div>
+<br>
+
+<div id="container" style="height: 1000px"></div>
+
+<!-- overlay -->
+<div id="myNav" class="overlay">
+  <div class="overlay-content">
+    
+    <a href="javascript:void(0);">Please wait...</a>
+  </div>
+</div>
+
+
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="tweet-country">Tweets</h4>
+      </div>
+      <div class="modal-body" id="tweet-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+    function openNav() {
+    document.getElementById("myNav").style.width = "100%";
+}
+
+function closeNav() {
+    document.getElementById("myNav").style.width = "0%";
+}
+	//generate the world map and get the country id
+	var country_code = '';
+	var map = new Datamap({
+        element: document.getElementById('container'),
+        done: function(datamap) {
+            datamap.svg.selectAll('.datamaps-subunit').on('click', function(geography) {
+                country_code = geography.id;
+                country_name = geography.properties.name;
+                getTweets(country_code,country_name);
+            });
+        }
+    });
+
+	// write ajax to get the tweets using the country code only
+    function getTweets(country_code,country_name) {
+    	// console.log(country_code,country_name);
+        $("#tweet-country").html("")
+        $("#tweet-country").html("Tweets from "+country_name);
+        openNav();
+        $.ajax({
+            data: {
+                country_name: country_name, 
+                csrfmiddlewaretoken: "{{ csrf_token }}"
+            },
+            type: "post",
+            url:"/books/world-reads/",
+            success: function(data){
+                processTweetData(JSON.parse(data), country_name);
+            },
+            error: function(err){
+                closeNav();
+            }
+
+        });
+    }
+
+    function processTweetData(obj, country_name){
+        closeNav();
+
+        tweet_html = "<ul class='list-group'>";
+        $(obj).each(function(key, val){
+            tweet_html += "<li class='list-group-item'>"+val+"</li>";
+        });
+        tweet_html += "</ul>";
+        $("#tweet-body").html("");
+        $("#tweet-body").append(tweet_html);
+        $("#myModal").modal();
+    }
+</script>
+
+
+
+{% endblock %}

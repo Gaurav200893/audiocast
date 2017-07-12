@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block content %}
+
+<div class="row">
+	<!-- categories -->
+			<div class="col-sm-3">
+				<div class="left-sidebar">
+					<h2>Category</h2>
+					
+					<div class="panel-group category-products" id="accordian"><!--category-products-->
+					{% for category in all_categories %}			
+					
+					{% if category.parent == None %}
+						<div class="panel panel-default">
+							<div class="panel-heading">
+							{% if category.child.count %}
+								<h4 class="panel-title">
+
+								     <a href="{% url 'category_link' category.id %}"
+								     	{% if category.id ==  selected_category %}
+											style="color:#fe980f"
+										{% endif %}
+								     >{{ category.category_name }}</a>
+									<a data-toggle="collapse" data-parent="#accordian" href="#category_{{category.id}}"
+										
+									>
+										<span class="badge pull-right"><i class="fa fa-plus"></i></span>
+									</a>
+								</h4>
+							{% else %}
+								<h4 class="panel-title"><a href="{% url 'category_link' category.id %}"
+										{% if category.id ==  selected_category %}
+											style="color:#fe980f"
+										{% endif %}
+								>{{ category.category_name }}
+								
+								</a></h4>
+							{% endif %}
+							</div>
+							
+
+							{% if category.child.count %}
+
+							<div id="category_{{category.id}}" class="panel-collapse 
+							{% for parent in matches_parent %} 
+							
+								{% if category.id == parent.id %} 
+									{{ collapse_category }}
+								{% else %}
+									collapse
+								{% endif %}
+								
+								
+							{% endfor %} 
+							">
+								<div class="panel-body">
+									<ul>
+									{% for c in category.child.all %}
+							
+										<li><a href="{% url 'category_link' c.id %}"
+											{% if c.id ==  selected_category %}
+												style="color:#fe980f"
+											{% endif %}
+										>{{ c }}</a></li>
+									{% endfor %}
+									</ul>
+								</div>
+							</div>
+							{% endif %}
+							
+						</div>
+					{% endif %}
+					{% endfor %}
+
+					</div><!--/category-products-->
+
+				</div>
+			</div>
+
+
+	<div class="col-sm-9 padding-right">
+					<div class="features_items"><!--features_items-->
+						<h2 class="title text-center">Books</h2>	
+						{% for book in books_by_category %}		
+
+						<div class="col-sm-4">
+							<div class="product-image-wrapper">
+								<a href="{% url 'detail' book.id %}">
+								<div class="single-products">
+										<div class="productinfo text-center">
+											<img src="{{ book.image.url }}" style="width: 195px;height: 195px;" alt="">
+											<p style="margin-top: 10px;">{{ book.title|truncatewords:8 }}</p>
+											<p>- {% for name in book.author_id.all %}
+												{{ name }}
+											{% endfor %}</p>
+										</div>
+
+								</div>
+								</a>
+							</div>
+						</div>	
+						{% endfor %}
+						
+					</div><!--features_items-->
+					
+				</div>
+</div>
+
+{% endblock %}
