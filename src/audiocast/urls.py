@@ -20,16 +20,21 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from books import views
 
-from accounts.views import (login_view, register_view, logout_view)
+from accounts.views import (login_view, register_view, logout_view, profile_view, edit_profile)
+from reviews import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^books/', include("books.urls")),
-
+    
+    url(r'^reviews/', include("reviews.urls")),
     url(r'^login/',login_view, name="login"),
     url(r'^logout/',logout_view, name="logout"),
     url(r'^register/',register_view, name="register"),
+    url(r'^profile/',profile_view, name="profile"),
+    url(r'^profile-edit/',edit_profile, name="edit_profile"),
     url(r'^', include("books.urls")),
+
 ]
 
 

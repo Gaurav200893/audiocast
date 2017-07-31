@@ -106,6 +106,15 @@ class Currency(models.Model):
 	def __str__(self):
 		return self.currency_name+" - "+self.currency_symbol
 
+
+class Rating(models.Model):
+	''' Books Rating '''
+
+	book = models.ForeignKey(Book)
+	user_id = models.OneToOneField(User)
+	rating = models.IntegerField(default=0)
+
+
 class Price(models.Model):
 	''' Price for book '''
 

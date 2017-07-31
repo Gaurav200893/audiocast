@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
 from .models import Book,Group,Price,Category,Language,Author,Narrator
-from .models import Currency, ProgramFormat, Publisher
+from .models import Currency, ProgramFormat, Publisher, Rating
 from .models import UserProfile
 
 # register each and every model
@@ -17,6 +17,7 @@ admin.site.register(Author)
 admin.site.register(Narrator)
 admin.site.register(Price)
 admin.site.register(Currency)
+admin.site.register(Rating)
 
 
 # define inline admin descriptor for user profile model

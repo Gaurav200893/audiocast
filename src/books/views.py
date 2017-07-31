@@ -3,8 +3,10 @@ from django.utils.decorators import method_decorator
 from django.http import JsonResponse,HttpResponse
 from django.core import serializers
 # from .models import Book, Category, Price, 
-from .models import Book, Category, Price, Currency, Language
+from .models import Book, Category, Price, Currency, Language, Rating, User
 import tweepy
+# import this for aggregation or group by
+from django.db.models import Count
 
 
 def getTweets(country_name):
@@ -74,6 +76,24 @@ class WorldReads(generic.ListView):
 
 	template_name = "world_tweets.html"
 
+	def get_queryset(self):
+		return Book.objects.all()
+
+	def post(self, request, *args, **kwargs):
+		context = {}
+		country_name = request.POST['country_name']
+		tweets = []
+		try:
+			tweets = getTweets(country_name)
+		except Exception:
+			tweets.append("Please try after sometime.")
+
+		return HttpResponse(JsonResponse(tweets, safe=False))
+
+class WorldReadsBook(generic.ListView):
+
+	template_name = "world_tweets.html"
+	context_object_name = "selected_books"
 
 	def get_queryset(self):
 		return Book.objects.all()
@@ -88,6 +108,7 @@ class WorldReads(generic.ListView):
 			tweets.append("Please try after sometime.")
 
 		return HttpResponse(JsonResponse(tweets, safe=False))
+
 
 class CategoryView(generic.ListView):
 	''' Display Books By Category '''
@@ -186,11 +207,39 @@ class DetailView(JSONResponseMixin, generic.DetailView):
 
 		context = super(DetailView, self).get_context_data(**kwargs)
 		currency_list_ids = Price.objects.all().values('currency')
-		language_list_ids = Price.objects.all().values('language')
+		language_list_ids = Price.objects.all().values('language')	
+
+
+		
+
+		# overall rating
+		overall_rating = None
+
+		is_rating_exists = Rating.objects.filter(book = self.kwargs.get('pk')).count()
+
+		if is_rating_exists:
+			overall_rating = Rating.objects.filter(book = self.kwargs.get('pk'))\
+			.values("rating")\
+			.annotate(rcount=Count('rating'))\
+			.order_by('-rcount')\
+			.order_by('-rating')[0]
+
+		# users rating
+		book_rating = None
+
+		if self.request.user.is_authenticated():
+			book_rating = Rating.objects.filter(book = self.kwargs.get('pk'),user_id=self.request.user).values("rating")
+		
+		if book_rating:
+			rating = book_rating[0]['rating']
+		else:
+			rating = 0
 
 		context['price_list'] = Price.objects.all().values('currency', 'language', 'price_tag')
 		context['currency_list'] = Currency.objects.filter(id__in=currency_list_ids)
 		context['language_list'] = Language.objects.filter(id__in=language_list_ids)
+		context['book_rating'] = rating
+		context['overall_rating'] = overall_rating
 		return context
 
 
@@ -221,6 +270,43 @@ class LanguagePriceView( generic.DetailView):
 
 		return HttpResponse(JsonResponse(context_dict))
 
+
+class RatingView(generic.TemplateView):
+	''' Rating update accoding to user '''
+	
+	template_name = "book_detail.html"
+
+	def post(self, request, *args, **kwargs):
+		rating = request.POST.get('rating', None)
+		book_id = request.POST.get('book_id', None)
+		book_model = Book.objects.get(pk=book_id)
+		context_dict = {}
+		
+		book_rating = None
+		if request.user.is_authenticated():
+			
+			user_rating = Rating.objects.filter(book=book_model,user_id=request.user).only('id','rating')
+			
+			
+			if user_rating:
+				rating_model = Rating.objects.get(book=book_model, user_id=request.user)
+				rating_model.rating = rating
+				rating_model.save()
+				user_rating = Rating.objects.filter(book=book_model,user_id=request.user).only('id','rating')
+				book_rating = user_rating
+			else:	
+				
+				rating_model = Rating(book=book_model, user_id=request.user, rating=rating)
+				rating_model.save()
+				user_rating = Rating.objects.filter(book=book_model,user_id=request.user).only('id','rating')
+				book_rating = user_rating
+
+			context_dict['success'] = 1
+			context_dict['book_rating'] = serializers.serialize('json',book_rating)
+		else:
+			context_dict['success'] = 0
+
+		return HttpResponse(JsonResponse(context_dict))
 
 
 '''

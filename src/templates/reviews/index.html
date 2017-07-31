@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load book_extras %}
+
+{% block content %}
+
+
+<div class="col-sm-12" style="margin-bottom: 10px;">
+    <h2 class="title text-center"> Reviews </h2>
+    <div class="col-xs-offset-2">
+      
+       {% for review in reviews %}
+
+       
+
+       <!-- {{ review.book.category_id }} -->
+       <div class="wrapper col-md-9" style="border: 1px solid #E0E0DA;border-radius: 9px;margin: 12px;">
+          <small>{{ review.book.category_id.parent__count }}</small>
+
+          {% for c in review.book.category_id.all %}
+            --
+            {{ c }}
+          {% endfor %}
+        <h4>{{ review.book }} <small>Review By: 
+        {% if review.user_id.first_name|length > 0  %}
+          {{ review.user_id.first_name }} {{ review.user_id.last_name }}
+        {% else %}
+          {{ review.user_id }}
+        {% endif %}
+
+        </small></h4>
+        <hr>
+        {{ review.review_text|safe }}
+        </div>
+       {% endfor %}
+     
+    </div>
+</div>
+	
+
+
+{% endblock %}

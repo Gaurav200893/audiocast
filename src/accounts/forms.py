@@ -10,6 +10,10 @@ from django.contrib.auth import (
 User = get_user_model()
 
 class UserLoginForm(forms.Form):
+	"""
+		User Login Form
+	"""
+
 	username = forms.CharField()
 	password = forms.CharField(widget=forms.PasswordInput)
 
@@ -31,6 +35,10 @@ class UserLoginForm(forms.Form):
 
 
 class UserRegisterForm(forms.ModelForm):
+	"""
+		User registration form
+	"""
+
 	email = forms.EmailField(label='Email address')
 	email2 = forms.EmailField(label='Confirm Email')
 	password = forms.CharField(widget=forms.PasswordInput)
@@ -54,5 +62,22 @@ class UserRegisterForm(forms.ModelForm):
 		if email_qs.exists():
 			raise forms.ValidationError("Email already exists")
 		return email
+
+class EditProfileForm(forms.ModelForm):
+	"""
+		Edit profile form
+	"""
+
+	first_name = forms.CharField(label='First Name')
+	last_name = forms.CharField(label='Last Name')
+	username = forms.EmailField(required=False,
+    widget=forms.TextInput(attrs={'required': 'false',"disabled":"disabled"}),)
+	email = forms.EmailField( required=False,
+    widget=forms.TextInput(attrs={'required': 'false',"disabled":"disabled"}),)
+
+
+	class Meta:
+		model = User
+		fields = ['first_name','last_name','username','email']
 
 
