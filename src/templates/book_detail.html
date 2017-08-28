@@ -199,9 +199,9 @@
 				$("#audio-icon").addClass("fa-pause");
 				$("#audio-icon").removeClass("fa-play");
 
-				$("#book_1")[0].load();
-				$("#book_1")[0].pause();
-				$("#book_1")[0].play();
+				$("#book_{{ book.id }}")[0].load();
+				$("#book_{{ book.id }}")[0].pause();
+				$("#book_{{ book.id }}")[0].play();
 			}else{
 				$(this).addClass("play");
 				$(this).removeClass("pause");
@@ -209,7 +209,7 @@
 				$("#audio-icon").removeClass("fa-pause");
 				$("#audio-icon").addClass("fa-play");
 
-				$("#book_1")[0].pause();
+				$("#book_{{ book.id }}")[0].pause();
 			}
 			
 

@@ -10,7 +10,7 @@
     <h2 class="title text-center"> Reviews </h2>
     <div class="col-xs-offset-1">
       
-      <form method="POST" action="">{% csrf_token %}
+      <form method="POST" action="" enctype="multipart/form-data">{% csrf_token %}
         {{ form.media }}
         <!-- {{ form.as_p }} -->
 

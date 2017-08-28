@@ -2,40 +2,313 @@
 {% load book_extras %}
 
 {% block content %}
+ <!-- {% for categoryinfo in categories %}
+   {% if categoryinfo.id == selected_category %}
+   {{ categoryinfo.id }}
+
+    <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a href="/reviews/{{ categoryinfo.id }}/"  style="color: #fe980f;"    > {{ categoryinfo.category_name }} </a>
+                  </h4>
+                </div>  
+    {% else %}
+      <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a href="/reviews/{{ categoryinfo.id }}/"    > {{ categoryinfo.category_name }} </a>
+                  </h4>
+                </div>  
+   {% endif %}
+{% endfor %} -->
+<div class="col-sm-3">
+        <div class="left-sidebar">
+          <h2>Category</h2> 
+          <div class="panel-group category-products" id="accordian"><!--category-products-->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a href="/reviews/" {% if category_id == 0 %} style="color: #fe980f;" {% endif %}> ALL </a>
+                  </h4>
+                </div>               
+              </div>
+           <!--  {% for categoryinfo in categories %}
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a href="/reviews/{{ categoryinfo.id }}/" {% if selected_category in categoryinfo %} style="color: #fe980f;"  {% endif %}  > {{ categoryinfo.category_name }} </a>
+                  </h4>
+                </div>               
+              </div>
 
 
-<div class="col-sm-12" style="margin-bottom: 10px;">
-    <h2 class="title text-center"> Reviews </h2>
-    <div class="col-xs-offset-2">
-      
-       {% for review in reviews %}
+            {% endfor %} -->
 
-       
+            {% for categoryinfo in categories %}
+                 {% if categoryinfo.id == selected_category %}
+                 
 
-       <!-- {{ review.book.category_id }} -->
-       <div class="wrapper col-md-9" style="border: 1px solid #E0E0DA;border-radius: 9px;margin: 12px;">
-          <small>{{ review.book.category_id.parent__count }}</small>
+                  <div class="panel panel-default">
+                              <div class="panel-heading">
+                                <h4 class="panel-title">
+                                  <a href="/reviews/{{ categoryinfo.id }}/"  style="color: #fe980f;"    > {{ categoryinfo.category_name }} </a>
+                                </h4>
+                              </div>  
+                              </div>
+                  {% else %}
+                    <div class="panel panel-default">
+                              <div class="panel-heading">
+                                <h4 class="panel-title">
+                                  <a href="/reviews/{{ categoryinfo.id }}/"    > {{ categoryinfo.category_name }} </a>
+                                </h4>
+                              </div>
+                              </div>  
+                 {% endif %}
+              {% endfor %}
+            
 
-          {% for c in review.book.category_id.all %}
-            --
-            {{ c }}
-          {% endfor %}
-        <h4>{{ review.book }} <small>Review By: 
-        {% if review.user_id.first_name|length > 0  %}
-          {{ review.user_id.first_name }} {{ review.user_id.last_name }}
-        {% else %}
-          {{ review.user_id }}
-        {% endif %}
-
-        </small></h4>
-        <hr>
-        {{ review.review_text|safe }}
+          </div><!--/category-products-->
         </div>
-       {% endfor %}
-     
+      </div>
+
+<!-- col-sm-9 padding-right -->
+<div class="col-sm-9 padding-right" style="margin-bottom: 10px;">
+    <h2 class="title text-center"> Reviews </h2>
+    <div class="review-container col-xs-offset-2 ">
+      <!-- container to add the reviews -->
+       
     </div>
+
+    <div class="loader-icon" style="text-align:center;color:#FE980F;">
+        <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+       </div>
 </div>
 	
+<script type="text/javascript">
 
+var global_paginator = 1; 
+
+//parse string or obj to json
+function get_parsed_json(obj){
+  return JSON.parse(obj);
+}
+
+
+
+/*
+* Check scroll end
+*/
+$(window).ready(function(){
+   if($(window).scrollTop() == $(document).height() - $(window).height()){
+    //ajax call for the 
+    getAllReviews();
+   }
+});
+$(window).scroll(function(){
+   if($(window).scrollTop() == $(document).height() - $(window).height()){
+    //ajax call for the 
+    getAllReviews();
+   }
+});
+
+
+/*
+* Get Reviews
+*/
+function getAllReviews(){
+
+  $.ajax({
+      data: { 
+        paginator: global_paginator ,
+        category_id: {{ category_id }},
+        csrfmiddlewaretoken: "{{ csrf_token }}"
+      },
+      type: "post",
+      url:"/reviews/ajax/getreview/",
+      success: function(data){
+        processReviewData(JSON.parse(data));
+      },
+      error: function(err){
+        console.log("no response");
+      }
+
+    });
+}
+
+
+
+/*
+* Process data
+*/
+function processReviewData(obj){
+
+  var is_new_data = obj.is_new_data;
+  var pager = Number(obj.page);
+  global_paginator = pager + 1;
+  $(".loader-icon").remove();
+  // var review_data= get_parsed_json(obj.reviews);
+  
+  generateReviewElements(obj.reviews,obj.media_path, is_new_data);
+
+}
+
+
+/*
+* Create elements
+*/
+function generateReviewElements(reviews,media_path,is_new_data){
+
+    if(is_new_data){
+      var review_block_html = '';
+      $.each(reviews,function(key,review_data){
+      
+      
+      var review_fields = review_data;
+
+
+      console.log(review_fields.likes__user_id);
+      review_block_html +=  '<div class="wrapper col-md-9" style="border: 1px solid #E0E0DA;border-radius: 9px;margin: 12px;padding: 10px;">'+
+      '<div class="header" review-label="'+key+'">'+
+      '<h4>'+review_fields.book__title+'<small> Review By:'+
+      (review_fields.user_id__first_name==""?
+      review_fields.user_id__username
+      :
+      review_fields.user_id__first_name+" "+review_fields.user_id__last_name
+      )
+      +'</small></h4>'+
+      '</div>'+
+      '<hr>'+
+      review_fields.review_text+
+      '<hr style="margin: 5px;clear:both;">'+
+      '<div style="margin: 10px;">'+
+        '<div class="like-wrapper" style="float: left;" >'+
+         
+          (review_fields.likes__user_id ?
+           '<button class="btn btn-sm btn-default btn-like" onclick="setReview(this);" like-attr="0">'+
+            '<i class="fa fa-heart heart-icon" style="color: red"></i> Like &nbsp&nbsp'+
+              '<span class="badge" style="background: cadetblue;">'+review_fields.rcount+'</span>'+
+            '</button>'
+            :
+             '<button class="btn btn-sm btn-default btn-like" onclick="setReview(this);" like-attr="1">'+
+            '<i class="fa fa-heart-o heart-icon" style="color: red"></i> Like &nbsp&nbsp'+
+              '<span class="badge" style="background: cadetblue;">'+review_fields.rcount+'</span>'+
+            '</button>'
+          )
+          +
+
+        '</div>'+   
+         (
+            review_fields.audio_review==""?
+
+            '<div class="" style="color:#005887;font-size: 15px;float: right;">'+
+            'Audio review not available '+
+            '</div>' 
+          :
+           '<div class="play-audio play" onclick="audioPlay(this);" style="color:#005887;font-size: 15px;float: right;">'+
+            '<span>'+
+              '<i id="audio-icon" class="fa fa-play" aria-hidden="true"></i> Play Review'+
+            '</span>'+
+            '<audio id="review_'+key+'" src="'+media_path+''+review_fields.audio_review+'"></audio>'+
+          '</div>'
+          )+
+
+      '</div>'+
+      '</div>';
+      });
+
+      $(".review-container").append(review_block_html);
+      
+      var loader_icon = '<div class="loader-icon" style="text-align:center;clear:both;color:#FE980F;">'+
+              '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>'+
+            '</div>';
+      $(".loader-icon").remove();
+      $(".base-container").append(loader_icon);
+    }else{
+      $(".loader-icon").remove();
+    } 
+
+}
+
+
+
+function setReview(ele){
+
+  var $parent = $(ele).parents(".wrapper");
+  var $header = $parent.find("div.header");
+  var review_id = $header.attr("review-label");
+  var param = $parent.find(".btn-like").attr("like-attr");
+
+  $.ajax({
+      data: { 
+        review_id: review_id ,
+        param: param,
+        csrfmiddlewaretoken: "{{ csrf_token }}"
+      },
+      type: "post",
+      url:"/reviews/add/like/",
+      success: function(data){
+        processReviewLikeData(JSON.parse(data),ele);
+      },
+      error: function(err){
+        console.log("no response");
+      }
+
+    });
+}
+
+function processReviewLikeData(obj,ele){
+  
+  var logged_in = obj.logged;
+  var success = obj.success;
+  var like_count_total = obj.like_count;
+  var like_count_user = obj.like_count_user;
+  // like-attr
+  jQuery(ele).find(".badge").html(like_count_total);
+  if(Number(like_count_user)){
+    jQuery(ele).attr("like-attr",0);
+    jQuery(ele).find(".heart-icon").removeClass("fa fa-heart-o").addClass("fa fa-heart");
+  }else{
+    jQuery(ele).attr("like-attr",1);
+    jQuery(ele).find(".heart-icon").removeClass("fa fa-heart").addClass("fa fa-heart-o");
+  }
+
+  if(!logged_in && !success){
+    // window.location.href = "/login/";
+  }
+  if(logged_in ){
+    if(!success)
+      alert("Unable to process current request.");
+  }
+}
+
+/*
+* Play Audio
+*/
+function audioPlay(ele){
+
+  if($(ele).hasClass("play")){
+    
+    $(ele).addClass("pause");
+    $(ele).removeClass("play");
+
+    $(ele).find("#audio-icon").addClass("fa-pause");
+    $(ele).find("#audio-icon").removeClass("fa-play");
+
+    $(ele).find("audio")[0].load();
+    $(ele).find("audio")[0].pause();
+    $(ele).find("audio")[0].play();
+  }else{
+
+    $(ele).addClass("play");
+    $(ele).removeClass("pause");
+    $(ele).find("#audio-icon").removeClass("fa-pause");
+    $(ele).find("#audio-icon").addClass("fa-play");
+    $(ele).find("audio")[0].pause();
+
+  }
+
+};
+
+</script>
 
 {% endblock %}

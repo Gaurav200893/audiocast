@@ -26,8 +26,10 @@ from reviews import views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^books/', include("books.urls")),
-    
+    url(r'^rest-auth/', include('rest_auth.urls')),
+
     url(r'^reviews/', include("reviews.urls")),
+    
     url(r'^login/',login_view, name="login"),
     url(r'^logout/',logout_view, name="logout"),
     url(r'^register/',register_view, name="register"),

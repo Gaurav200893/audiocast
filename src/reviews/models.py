@@ -23,7 +23,21 @@ class Review(models.Model):
 	updated = models.DateTimeField(auto_now=True, auto_now_add=False)
 	timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
 
+	def __str__(self):
+		return str(self.book)
+
 	def __unicode__(self):
 		return str(self.book)
+
+
+class Like(models.Model):
+	book_review = models.ForeignKey(Review, related_name="likes")
+	user = models.ForeignKey(User)
+
+	def __str__(self):
+		return str(self.book_review) + " : " + str(self.user) + " : "+ str(self.book_review.id)
+
+	def __unicode__(self):
+		return str(self.book_review) + " : " + str(self.user) + " : "+ str(self.book_review.id)
 
 

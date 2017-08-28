@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'books',
     'reviews',
     'ckeditor',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'rest_auth'
 ]
 
 MIDDLEWARE_CLASSES = [
